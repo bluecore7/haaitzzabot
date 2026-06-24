@@ -28,6 +28,7 @@ app.command("/haaitzzabot-summarize", async({command,ack,respond,client})=>{
     let channel=command.channel_id;
     let init_hour=currentTime-(hour*3600);
     let prompt=parsed.commands.prompt|| "Sumarize this:"
+    let modelName=parsed.commands.model || "gemini-3.5-flash";
     await respond({text: `Fetching messages from the last ${hour} hours`})
     try {
       const result = await client.conversations.history({
@@ -40,22 +41,22 @@ app.command("/haaitzzabot-summarize", async({command,ack,respond,client})=>{
       const whole=textArray.join("\n");
       await respond({text: "Reading the chat and grinding ..."});
       try {
-        const url =`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        const url =`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
         const body={
-          "contents":[{"parts" : [ { text :`${prompt}+":"+"\n\n"+${whole}`}]
+          "contents":[{"parts" : [ { text :`${prompt}:\n\n${whole}`}]
           }]
         } 
         const aiResponse=await axios.post(url,body);
         const finalSummary=aiResponse.data.candidates[0].content.parts[0].text;
         await respond({text:finalSummary});
         } catch (error) {
-          console.log("AI Error: ",error.resp)
+          console.log("AI Error: ",error.response?.data || error.message)
           await respond({text: "API error"})
         
       }
       
     } catch (error) {
-      console.error("Error fetching messages:", error.response?.data || error.message);
+      console.error("Error fetching messages:");
     }}
 });
 
