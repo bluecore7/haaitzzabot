@@ -1,9 +1,9 @@
 
 require("dotenv").config();
-const axios =require("axios");
 const parseCLI=require("./CLIish.js");
 const { App } = require("@slack/bolt");
 const axios=require("axios");
+
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   appToken: process.env.SLACK_APP_TOKEN,
@@ -27,6 +27,7 @@ app.command("/haaitzzabot-summarize", async({command,ack,respond,client})=>{
     let hour=parseInt(parsed.commands.time)||24; // default to 1day 
     let channel=command.channel_id;
     let init_hour=currentTime-(hour*3600);
+    let prompt=parsed.commands.prompt|| "Sumarize this:"
     await respond({text: `Fetching messages from the last ${hour} hours`})
     try {
       const result = await client.conversations.history({
@@ -37,9 +38,24 @@ app.command("/haaitzzabot-summarize", async({command,ack,respond,client})=>{
       const textArray=result.messages.map(msg=> msg.text);
       //console.log(textArray);
       const whole=textArray.join("\n");
+      await respond({text: "Reading the chat and grinding ..."});
+      try {
+        const url =`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        const body={
+          "contents":[{"parts" : [ { text :`${prompt}+":"+"\n\n"+${whole}`}]
+          }]
+        } 
+        const aiResponse=await axios.post(url,body);
+        const finalSummary=aiResponse.data.candidates[0].content.parts[0].text;
+        await respond({text:finalSummary});
+        } catch (error) {
+          console.log("AI Error: ",error.resp)
+          await respond({text: "API error"})
+        
+      }
       
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error("Error fetching messages:", error.response?.data || error.message);
     }}
 });
 
