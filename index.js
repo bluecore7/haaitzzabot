@@ -22,6 +22,29 @@ function errorHandler(func){
     }
   }
 }
+app.command("/haaitzzabot-help", async ({ command, ack, respond }) => {
+  await ack();
+  await respond({
+    text: `I am Bot.
+    General Commnands:
+
+    /haaitzzabot-ping : Check my existance and latency
+
+    Utility Commands:
+
+    /haaitzzabot-summarize : Summarize the messages in a channel.
+     Usage: 
+    /haaitzzabot-summarize -time <hours> -model <model_name> -prompt <prompt_text> -channel <channel_name> -join <yes/no>
+    -time :Number of hours to  look back for messages. Default is 24 hours.
+    -model :The AI model to use for summarization. Default is "gemini-3.1-flash-lite".(You can use any model available in the Gemini API)
+    -prompt :The prompt to guide the AI in summarizing the messages. Default is "Summarize this:"
+    -channel :The name of the channel to summarize. If not provided, it will summarize the current channel.
+    -join :Whether to join the channel if not already a member. Use "yes" to join, "no" to skip. Default is "no".
+    Example:
+    /haaitzzabot-summarize -time 5 -model gemini-pro -prompt "hey, just pick the msgs that have some tech to grasp, dump everything else" -channel general -join yes
+  `,
+  });
+});
 app.command("/haaitzzabot-ping", async ({ command, ack, respond }) => {
   const start = Date.now();
   await ack();
