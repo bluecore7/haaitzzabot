@@ -10,6 +10,31 @@ const app = new App({
   socketMode: true,
 });
 
+async function askGemini(modelName, prompt, chatTranscript) {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const body = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `INSTRUCTIONS: ${prompt}\n\nCRITICAL FORMATTING RULES: You are outputting to Slack. Do NOT use standard markdown. Use *single asterisks* for bold text. Do not use hashtags (#) for headers.\n\nCHAT TRANSCRIPT:\n${chatTranscript} :\n\n${chatTranscript}`,
+            },
+          ],
+        },
+      ],
+    };
+    const aiResponse = await axios.post(url, body);
+    const finalSummary = aiResponse.data.candidates[0].content.parts[0].text;
+
+    return finalSummary;
+  } catch (error) {
+    console.log("AI Error: ", error.response?.data || error.message);
+
+    return "AI failed to respond: " + error.message;
+  }
+}
+
 function errorHandler(func){
   return async ({command,ack,respond,client})=>{
     try{
@@ -97,29 +122,10 @@ app.command("/haaitzzabot-summarize", errorHandler(async({command,ack,respond,cl
         return;
       }
       await respond({text: "Reading the chat and grinding ..."});
-      try {
-        const url =`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-        const body = {
-          contents: [
-            {
-              parts: [
-                {
-                  text: `INSTRUCTIONS: ${prompt}\n\nCRITICAL FORMATTING RULES: You are outputting to Slack. Do NOT use standard markdown. Use *single asterisks* for bold text. Do not use hashtags (#) for headers.\n\nCHAT TRANSCRIPT:\n${whole} :\n\n${whole}`,
-                },
-              ],
-            },
-          ],
-        }; 
-        const aiResponse=await axios.post(url,body);
-        const finalSummary=aiResponse.data.candidates[0].content.parts[0].text;
-        await respond({text:finalSummary});
-        } catch (error) {
-          console.log("AI Error: ",error.response?.data || error.message);
-          await respond({text: 'AI failed to  repond : ${error.message}'});
-          return;
-        
-      }
       
+      const finalSummary = await askGemini(modelName, prompt, whole);
+      
+      await respond({text: finalSummary});      
     } catch (error) {
       if(error.data?.error==="not_in_channel"){
         await respond({text:`Oops! I can't access ${targetChannel} .Run your command again with "-join yes" `});
