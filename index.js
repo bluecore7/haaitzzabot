@@ -10,6 +10,31 @@ const app = new App({
   socketMode: true,
 });
 
+async function askOpenAI(modelName,prompt,chatTranscript){
+  const body = {
+    model: modelName,
+    messages: [
+      {
+        role: "system",
+        content: `INSTRUCTIONS: ${prompt}\n\nCRITICAL FORMATTING RULES: You are outputting to Slack. Do NOT use standard markdown. Use *single asterisks* for bold text. Do not use hashtags (#) for headers.`,
+      },
+      {
+        role: "user",
+        content: `CHAT TRANSCRIPT:\n${chatTranscript}`,
+      },
+    ],
+  };
+  const url = "https://api.openai.com/v1/chat/completions";
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+  };
+  const aiResponse = await axios.post(url, body, config);
+  return aiResponse.data.choices[0].message.content;
+}
+
 async function askGemini(modelName, prompt, chatTranscript) {
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
@@ -122,8 +147,11 @@ app.command("/haaitzzabot-summarize", errorHandler(async({command,ack,respond,cl
         return;
       }
       await respond({text: "Reading the chat and grinding ..."});
-      
-      const finalSummary = await askGemini(modelName, prompt, whole);
+      let finalSummary="";
+      if(modelName.startsWith("gpt")|| modelName.startsWith("o1")){
+        finalSummary=await askOpenAI(modelName,prompt,whole);
+      }else{
+      finalSummary = await askGemini(modelName, prompt, whole);}
       
       await respond({text: finalSummary});      
     } catch (error) {
