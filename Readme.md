@@ -2,7 +2,7 @@
 
 A utility Slack bot that fetches unread messages from any channel and grinds them through Gemini — controlled entirely using CLI-style flags.
 
-![Bot in action](https://github.com/bluecore7/haaitzzabot/blob/main/gitassets/chat.png)
+<img src="https://github.com/bluecore7/haaitzzabot/blob/main/gitassets/chat.png" width="700"/>
 
 ## Try It
 
