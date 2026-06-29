@@ -6,7 +6,7 @@ A utility Slack bot that fetches unread messages from any channel and grinds the
 
 ## Try It
 
-**[Add haaitzzabot to your Slack workspace](https://slack.com/oauth/v2/authorize?client_id=2210535565.11300283767236&scope=channels:join,app_mentions:read,channels:history,channels:read,chat:write,commands,groups:history,groups:read,im:read,mpim:read&user_scope=)**
+<a href="https://slack.com/oauth/v2/authorize?client_id=2210535565.11300283767236&scope=channels:join,app_mentions:read,channels:history,channels:read,chat:write,commands,groups:history,groups:read,im:read,mpim:read&user_scope="><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
 ## Commands
 
 | Command | What it does |
